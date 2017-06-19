@@ -9,4 +9,4 @@ Build with Visual Studio 2015 or newer
 gitbranchcleaner.exe <git folder path>
 ```
 
-Will create two .bat files one for deleting local and remote branches. Edit files before running to exclude branches that you do not want to be deleted.
+Will create two .bat files, one for deleting local and remote branches. Edit files before running to exclude branches that you do not want to be deleted.
