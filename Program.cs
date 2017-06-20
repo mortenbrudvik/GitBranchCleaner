@@ -11,6 +11,7 @@ namespace GitBranchCleaner
         static void Main(string[] args)
         {
             var logger = new LogService();
+            var appSettings = new AppSeetings();
 
             if (args.Length != 1)
             {
@@ -21,7 +22,7 @@ namespace GitBranchCleaner
 
             var gitPath = args[0];
 
-            var scriptCreator = new GitScriptCreator(logger, gitPath, new List<string>());
+            var scriptCreator = new GitScriptCreator(logger, gitPath, appSettings.ExcludedBranches);
 
             try
             {

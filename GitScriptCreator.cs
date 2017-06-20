@@ -47,13 +47,15 @@ namespace GitBranchCleaner
             {
                 using (var repo = new Repository(_gitFolder))
                 {
-                    var localBranches = repo.Branches.Where(p => !p.IsRemote).ToList().Select(x => $"git branch -d { x.FriendlyName}");
-                    CreateScriptFile(gitLocalFilePath, localBranches);
+                    var lines = repo.Branches.Where(p => !p.IsRemote && _excludeBranches.All(x => p.FriendlyName != x)).ToList().
+                        Select(x => $"git branch -d { x.FriendlyName}").ToList();
+                    CreateScriptFile(gitLocalFilePath, lines);
 
                     if (localOnly) return;
 
-                    var remoteBranches = repo.Branches.Where(p => p.IsRemote).ToList().Select(x => $"git push origin --delete {x.FriendlyName.Replace(@"origin/", "")}");
-                    CreateScriptFile(gitRemoteFilePath, remoteBranches);
+                    lines = repo.Branches.Where(p => p.IsRemote && _excludeBranches.All(x => p.FriendlyName.Replace(@"origin/", "") != x)).ToList().
+                        Select(x => $"git push origin --delete {x.FriendlyName.Replace(@"origin/", "")}").ToList();
+                    CreateScriptFile(gitRemoteFilePath, lines);
                 }
             }
             catch (Exception e)
@@ -65,14 +67,11 @@ namespace GitBranchCleaner
             }
         }
 
-        private static void CreateScriptFile(string gitLocalFilePath, IEnumerable<string> localBranches)
+        private static void CreateScriptFile(string gitLocalFilePath, List<string> lines)
         {
             using (var writer = File.AppendText(gitLocalFilePath))
             {
-                foreach (var localBranch in localBranches)
-                {
-                    writer.WriteLine($"git branch -d {localBranch}");
-                }
+                lines.ForEach(line => writer.WriteLine(line));
             }
         }
     }
