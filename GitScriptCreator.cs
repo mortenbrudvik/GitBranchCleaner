@@ -43,18 +43,22 @@ namespace GitBranchCleaner
             if (!Directory.Exists(_gitFolder))
                 throw new ArgumentException($"The folder \"{_gitFolder}\" does not exist");
 
+
+
             try
             {
                 using (var repo = new Repository(_gitFolder))
                 {
                     var lines = repo.Branches.Where(p => !p.IsRemote && _excludeBranches.All(x => p.FriendlyName != x)).ToList().
                         Select(x => $"git branch -d { x.FriendlyName}").ToList();
+                    lines.Insert(0, $"cd \"{_gitFolder}\"" + Environment.NewLine);
                     CreateScriptFile(gitLocalFilePath, lines);
 
                     if (localOnly) return;
 
                     lines = repo.Branches.Where(p => p.IsRemote && _excludeBranches.All(x => p.FriendlyName.Replace(@"origin/", "") != x)).ToList().
                         Select(x => $"git push origin --delete {x.FriendlyName.Replace(@"origin/", "")}").ToList();
+                    lines.Insert(0, $"cd \"{_gitFolder}\"" + Environment.NewLine);
                     CreateScriptFile(gitRemoteFilePath, lines);
                 }
             }
@@ -67,9 +71,9 @@ namespace GitBranchCleaner
             }
         }
 
-        private static void CreateScriptFile(string gitLocalFilePath, List<string> lines)
+        private static void CreateScriptFile(string filePath, List<string> lines)
         {
-            using (var writer = File.AppendText(gitLocalFilePath))
+            using (var writer = File.AppendText(filePath))
             {
                 lines.ForEach(line => writer.WriteLine(line));
             }
